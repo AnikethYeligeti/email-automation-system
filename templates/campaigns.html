@@ -20,7 +20,7 @@
         <td><span class="tag">{{ c.campaign_type }}</span></td>
         <td>{{ c.group_name or 'All subscribers' }}</td>
         <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
-        <td>{{ c.sent_count }}</td>
+        <td>{{ c.sent_count }}{% if c.failed_count %} <span class="status status-unsubscribed">{{ c.failed_count }} failed</span>{% endif %}</td>
         <td class="muted">{{ c.created_at }}</td>
         <td class="row-actions">
           {% if c.status != 'sent' %}

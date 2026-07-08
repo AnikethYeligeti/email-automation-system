@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Real email delivery</p>
+    <h1>SMTP settings</h1>
+  </div>
+</header>
+
+<section class="panel form-panel wide">
+  <h2>Mailtrap (or any SMTP provider)</h2>
+  <p class="muted small">
+    Get free sandbox credentials at
+    <a href="https://mailtrap.io" target="_blank" rel="noopener">mailtrap.io</a> →
+    Email Testing → Inboxes → SMTP Settings. Emails sent here land in your Mailtrap
+    inbox, not real recipients — safe for testing and demos.
+  </p>
+
+  <form method="post" class="stacked-form mt">
+    <div class="two-col">
+      <label>SMTP host
+        <input type="text" name="smtp_host" value="{{ s.smtp_host }}" placeholder="sandbox.smtp.mailtrap.io" required>
+      </label>
+      <label>SMTP port
+        <input type="text" name="smtp_port" value="{{ s.smtp_port }}" placeholder="587" required>
+      </label>
+    </div>
+    <div class="two-col">
+      <label>Username
+        <input type="text" name="smtp_username" value="{{ s.smtp_username }}" placeholder="Mailtrap username" required>
+      </label>
+      <label>Password
+        <input type="password" name="smtp_password" placeholder="{{ '•••••••• (unchanged)' if s.has_password else 'Mailtrap password' }}">
+      </label>
+    </div>
+    <div class="two-col">
+      <label>From email
+        <input type="email" name="smtp_from_email" value="{{ s.smtp_from_email }}" placeholder="hello@yourproject.com" required>
+      </label>
+      <label>From name
+        <input type="text" name="smtp_from_name" value="{{ s.smtp_from_name }}" placeholder="Mailflow">
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Save settings</button>
+    </div>
+  </form>
+
+  <form method="post" action="{{ url_for('settings_test') }}" class="mt">
+    <button class="btn btn-ghost" type="submit">Test connection</button>
+  </form>
+
+  <p class="muted small mt">
+    If these fields are left empty, campaigns will still work using simulated sending
+    (no real emails, randomized engagement) — useful for demoing the analytics dashboard
+    without needing an inbox at all.
+  </p>
+</section>
+{% endblock %}

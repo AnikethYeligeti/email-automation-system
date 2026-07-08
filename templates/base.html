@@ -34,6 +34,9 @@
       <a href="{{ url_for('reports') }}" class="{{ 'active' if request.endpoint=='reports' }}">
         <span class="nav-icon">06</span> Reports
       </a>
+      <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint=='settings' }}">
+        <span class="nav-icon">07</span> Settings
+      </a>
     </nav>
     <div class="sidebar-footer">
       <span class="dot"></span> System live · SQLite

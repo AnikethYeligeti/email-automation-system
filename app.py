@@ -9,7 +9,8 @@ Module 4: Campaign Analytics Dashboard
 Module 5: Report Generation
 """
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, Response, send_file
-from models import get_db, init_db, now
+from models import get_db, init_db, now, get_setting, set_setting
+import email_sender
 import csv
 import io
 import random
@@ -27,7 +28,12 @@ init_db()
 # Shared helpers
 # ---------------------------------------------------------------------------
 def _simulate_send(conn, camp_id):
-    """Core send routine shared by manual 'Send now' and the automation scheduler."""
+    """Core send routine shared by manual 'Send now' and the automation scheduler.
+    Sends a real email via SMTP if Mailtrap/SMTP is configured in Settings;
+    otherwise falls back to a simulated send so the app still works out of the box.
+    Engagement (opens/clicks) is randomized either way, since real open/click
+    tracking would require pixel + link-redirect infrastructure (out of the
+    brief's scope)."""
     campaign = conn.execute("SELECT * FROM campaigns WHERE id = ?", (camp_id,)).fetchone()
     if not campaign:
         return 0
@@ -40,13 +46,24 @@ def _simulate_send(conn, camp_id):
     else:
         subs = conn.execute("SELECT * FROM subscribers WHERE status = 'active'").fetchall()
 
+    smtp_configured = email_sender.get_smtp_config(conn) is not None
+
     for sub in subs:
-        opened = 1 if random.random() < 0.45 else 0
+        if smtp_configured:
+            success, error = email_sender.send_email(conn, sub["email"], campaign["subject"], campaign["content"])
+            delivery_status = "delivered" if success else "failed"
+        else:
+            delivery_status = "simulated"
+            error = None
+
+        opened = 1 if delivery_status != "failed" and random.random() < 0.45 else 0
         clicked = 1 if opened and random.random() < 0.35 else 0
         conn.execute("""
-            INSERT INTO campaign_sends (campaign_id, subscriber_id, opened, opened_at, clicked, clicked_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (camp_id, sub["id"], opened, now() if opened else None, clicked, now() if clicked else None))
+            INSERT INTO campaign_sends
+                (campaign_id, subscriber_id, opened, opened_at, clicked, clicked_at, delivery_status, error_message)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (camp_id, sub["id"], opened, now() if opened else None, clicked, now() if clicked else None,
+              delivery_status, error))
 
     conn.execute("UPDATE campaigns SET status = 'sent', sent_at = ? WHERE id = ?", (now(), camp_id))
     conn.commit()
@@ -55,12 +72,27 @@ def _simulate_send(conn, camp_id):
 
 def _send_single(conn, camp_id, subscriber_id):
     """Send one campaign to one subscriber (used by the on-subscribe welcome automation)."""
-    opened = 1 if random.random() < 0.45 else 0
+    campaign = conn.execute("SELECT * FROM campaigns WHERE id = ?", (camp_id,)).fetchone()
+    sub = conn.execute("SELECT * FROM subscribers WHERE id = ?", (subscriber_id,)).fetchone()
+    if not campaign or not sub:
+        return
+
+    smtp_configured = email_sender.get_smtp_config(conn) is not None
+    if smtp_configured:
+        success, error = email_sender.send_email(conn, sub["email"], campaign["subject"], campaign["content"])
+        delivery_status = "delivered" if success else "failed"
+    else:
+        delivery_status = "simulated"
+        error = None
+
+    opened = 1 if delivery_status != "failed" and random.random() < 0.45 else 0
     clicked = 1 if opened and random.random() < 0.35 else 0
     conn.execute("""
-        INSERT INTO campaign_sends (campaign_id, subscriber_id, opened, opened_at, clicked, clicked_at)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (camp_id, subscriber_id, opened, now() if opened else None, clicked, now() if clicked else None))
+        INSERT INTO campaign_sends
+            (campaign_id, subscriber_id, opened, opened_at, clicked, clicked_at, delivery_status, error_message)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (camp_id, subscriber_id, opened, now() if opened else None, clicked, now() if clicked else None,
+          delivery_status, error))
     conn.commit()
 
 
@@ -268,7 +300,9 @@ def campaigns():
     conn = get_db()
     camps = conn.execute("""
         SELECT c.*, g.name as group_name,
-        (SELECT COUNT(*) FROM campaign_sends WHERE campaign_id = c.id) as sent_count
+        (SELECT COUNT(*) FROM campaign_sends WHERE campaign_id = c.id) as sent_count,
+        (SELECT COUNT(*) FROM campaign_sends WHERE campaign_id = c.id AND delivery_status = 'failed') as failed_count,
+        (SELECT COUNT(*) FROM campaign_sends WHERE campaign_id = c.id AND delivery_status = 'delivered') as delivered_count
         FROM campaigns c
         LEFT JOIN groups g ON c.group_id = g.id
         ORDER BY c.created_at DESC
@@ -315,8 +349,19 @@ def send_campaign(camp_id):
         conn.close()
         return redirect(url_for("campaigns"))
     count = _simulate_send(conn, camp_id)
+    failed = conn.execute(
+        "SELECT COUNT(*) c FROM campaign_sends WHERE campaign_id = ? AND delivery_status = 'failed'",
+        (camp_id,)
+    ).fetchone()["c"]
+    smtp_on = email_sender.get_smtp_config(conn) is not None
     conn.close()
-    flash(f"Campaign sent to {count} subscribers.", "success")
+    if smtp_on:
+        if failed:
+            flash(f"Sent to {count} subscribers via SMTP — {failed} failed to deliver (check Settings).", "error")
+        else:
+            flash(f"Delivered to {count} subscribers via real SMTP (Mailtrap).", "success")
+    else:
+        flash(f"Campaign sent to {count} subscribers (simulated — configure SMTP in Settings for real delivery).", "success")
     return redirect(url_for("campaigns"))
 
 
@@ -599,6 +644,47 @@ def report_campaign_pdf(camp_id):
     safe_name = "".join(ch if ch.isalnum() else "_" for ch in c["name"])
     return send_file(buf, mimetype="application/pdf", as_attachment=True,
                       download_name=f"campaign_report_{safe_name}.pdf")
+
+
+# ---------------------------------------------------------------------------
+# Settings: real SMTP (Mailtrap) configuration
+# ---------------------------------------------------------------------------
+@app.route("/settings", methods=["GET", "POST"])
+def settings():
+    conn = get_db()
+    if request.method == "POST":
+        set_setting(conn, "smtp_host", request.form.get("smtp_host", "").strip())
+        set_setting(conn, "smtp_port", request.form.get("smtp_port", "").strip())
+        set_setting(conn, "smtp_username", request.form.get("smtp_username", "").strip())
+        # Only overwrite the password if a new one was actually entered
+        new_password = request.form.get("smtp_password", "").strip()
+        if new_password:
+            set_setting(conn, "smtp_password", new_password)
+        set_setting(conn, "smtp_from_email", request.form.get("smtp_from_email", "").strip())
+        set_setting(conn, "smtp_from_name", request.form.get("smtp_from_name", "Mailflow").strip())
+        conn.close()
+        flash("SMTP settings saved.", "success")
+        return redirect(url_for("settings"))
+
+    current = {
+        "smtp_host": get_setting(conn, "smtp_host", ""),
+        "smtp_port": get_setting(conn, "smtp_port", "587"),
+        "smtp_username": get_setting(conn, "smtp_username", ""),
+        "smtp_from_email": get_setting(conn, "smtp_from_email", ""),
+        "smtp_from_name": get_setting(conn, "smtp_from_name", "Mailflow"),
+        "has_password": bool(get_setting(conn, "smtp_password", "")),
+    }
+    conn.close()
+    return render_template("settings.html", s=current)
+
+
+@app.route("/settings/test", methods=["POST"])
+def settings_test():
+    conn = get_db()
+    ok, message = email_sender.test_connection(conn)
+    conn.close()
+    flash(message, "success" if ok else "error")
+    return redirect(url_for("settings"))
 
 
 if __name__ == "__main__":

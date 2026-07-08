@@ -60,8 +60,15 @@ def init_db():
         opened_at TEXT,
         clicked INTEGER DEFAULT 0,
         clicked_at TEXT,
+        delivery_status TEXT DEFAULT 'simulated',  -- simulated, delivered, failed
+        error_message TEXT,
         FOREIGN KEY (campaign_id) REFERENCES campaigns(id),
         FOREIGN KEY (subscriber_id) REFERENCES subscribers(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
     );
 
     CREATE TABLE IF NOT EXISTS automation_rules (
@@ -96,3 +103,17 @@ def init_db():
 
 def now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def get_setting(conn, key, default=None):
+    row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+    return row["value"] if row else default
+
+
+def set_setting(conn, key, value):
+    conn.execute(
+        "INSERT INTO settings (key, value) VALUES (?, ?) "
+        "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        (key, value),
+    )
+    conn.commit()
