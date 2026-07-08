@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Module 5</p>
+    <h1>Reports</h1>
+  </div>
+</header>
+
+<section class="panel-row">
+  <div class="panel">
+    <h2 style="font-size:15px;margin:0 0 10px;">Subscriber report</h2>
+    <p class="muted small">Full subscriber list with group and status.</p>
+    <a class="btn btn-secondary" href="{{ url_for('report_subscribers_csv') }}">Download CSV</a>
+  </div>
+  <div class="panel">
+    <h2 style="font-size:15px;margin:0 0 10px;">Campaign summary report</h2>
+    <p class="muted small">All campaigns with sends, opens, clicks and rates.</p>
+    <a class="btn btn-secondary" href="{{ url_for('report_campaigns_csv') }}">Download CSV</a>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>Per-campaign PDF reports</h2></div>
+  {% if campaigns %}
+  <table class="data-table">
+    <thead><tr><th>Campaign</th><th>Sent</th><th>Opens</th><th>Clicks</th><th></th></tr></thead>
+    <tbody>
+      {% for c in campaigns %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td class="muted">{{ c.sent_at }}</td>
+        <td>{{ c.opens or 0 }}</td>
+        <td>{{ c.clicks or 0 }}</td>
+        <td><a class="btn btn-sm btn-ghost" href="{{ url_for('report_campaign_pdf', camp_id=c.id) }}">Download PDF</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">Send a campaign first to generate its report.</div>
+  {% endif %}
+</section>
+{% endblock %}

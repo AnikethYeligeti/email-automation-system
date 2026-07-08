@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Dashboard{% endblock %} · Mailflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">▣</span>
+      <span class="brand-name">Mailflow</span>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint=='index' }}">
+        <span class="nav-icon">01</span> Overview
+      </a>
+      <a href="{{ url_for('subscribers') }}" class="{{ 'active' if request.endpoint=='subscribers' }}">
+        <span class="nav-icon">02</span> Subscribers
+      </a>
+      <a href="{{ url_for('campaigns') }}" class="{{ 'active' if request.endpoint in ['campaigns','new_campaign'] }}">
+        <span class="nav-icon">03</span> Campaigns
+      </a>
+      <a href="{{ url_for('automation') }}" class="{{ 'active' if request.endpoint=='automation' }}">
+        <span class="nav-icon">04</span> Automation
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}">
+        <span class="nav-icon">05</span> Analytics
+      </a>
+      <a href="{{ url_for('reports') }}" class="{{ 'active' if request.endpoint=='reports' }}">
+        <span class="nav-icon">06</span> Reports
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="dot"></span> System live · SQLite
+    </div>
+  </aside>
+
+  <main class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

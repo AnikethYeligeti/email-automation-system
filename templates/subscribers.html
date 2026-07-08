@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Subscribers{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Module 1</p>
+    <h1>Subscriber management</h1>
+  </div>
+</header>
+
+<section class="panel-row">
+  <div class="panel form-panel">
+    <h2>Add subscriber</h2>
+    <form method="post" action="{{ url_for('add_subscriber') }}" class="stacked-form">
+      <label>Name<input type="text" name="name" required placeholder="Jane Doe"></label>
+      <label>Email<input type="email" name="email" required placeholder="jane@example.com"></label>
+      <label>Group
+        <select name="group_id">
+          <option value="">— No group —</option>
+          {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-primary" type="submit">Add subscriber</button>
+    </form>
+  </div>
+
+  <div class="panel form-panel">
+    <h2>Import contact list (CSV)</h2>
+    <form method="post" action="{{ url_for('import_subscribers') }}" enctype="multipart/form-data" class="stacked-form">
+      <label>CSV file <span class="hint">columns: name, email</span>
+        <input type="file" name="csv_file" accept=".csv" required>
+      </label>
+      <label>Assign to group
+        <select name="group_id">
+          <option value="">— No group —</option>
+          {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-secondary" type="submit">Import CSV</button>
+    </form>
+
+    <h2 class="mt">Create group</h2>
+    <form method="post" action="{{ url_for('add_group') }}" class="inline-form">
+      <input type="text" name="name" placeholder="e.g. VIP Customers" required>
+      <button class="btn btn-ghost" type="submit">Create</button>
+    </form>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>All subscribers ({{ subscribers|length }})</h2>
+    <form method="get" class="filter-form">
+      <input type="text" name="search" placeholder="Search name or email" value="{{ search }}">
+      <select name="group" onchange="this.form.submit()">
+        <option value="">All groups</option>
+        {% for g in groups %}
+        <option value="{{ g.name }}" {{ 'selected' if group_filter==g.name }}>{{ g.name }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-ghost" type="submit">Filter</button>
+    </form>
+  </div>
+
+  {% if subscribers %}
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Group</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+    <tbody>
+      {% for s in subscribers %}
+      <tr>
+        <td>{{ s.name }}</td>
+        <td class="mono">{{ s.email }}</td>
+        <td>{{ s.group_name or '—' }}</td>
+        <td>
+          <form method="post" action="{{ url_for('toggle_subscriber', sub_id=s.id) }}">
+            <button class="status status-{{ s.status }} as-button" type="submit">{{ s.status }}</button>
+          </form>
+        </td>
+        <td class="muted">{{ s.created_at }}</td>
+        <td>
+          <form method="post" action="{{ url_for('delete_subscriber', sub_id=s.id) }}" onsubmit="return confirm('Remove this subscriber?')">
+            <button class="link-danger" type="submit">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No subscribers found. Add one above or import a CSV.</div>
+  {% endif %}
+</section>
+{% endblock %}

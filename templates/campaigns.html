@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Campaigns{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Module 2 · Module 3</p>
+    <h1>Campaigns</h1>
+  </div>
+  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">+ New campaign</a>
+</header>
+
+<section class="panel">
+  {% if campaigns %}
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Group</th><th>Status</th><th>Sent</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+      {% for c in campaigns %}
+      <tr>
+        <td><strong>{{ c.name }}</strong><div class="muted small">{{ c.subject }}</div></td>
+        <td><span class="tag">{{ c.campaign_type }}</span></td>
+        <td>{{ c.group_name or 'All subscribers' }}</td>
+        <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
+        <td>{{ c.sent_count }}</td>
+        <td class="muted">{{ c.created_at }}</td>
+        <td class="row-actions">
+          {% if c.status != 'sent' %}
+          <form method="post" action="{{ url_for('send_campaign', camp_id=c.id) }}" onsubmit="return confirm('Send this campaign now?')">
+            <button class="btn btn-sm btn-primary" type="submit">Send now</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('delete_campaign', camp_id=c.id) }}" onsubmit="return confirm('Delete this campaign?')">
+            <button class="link-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No campaigns yet. <a href="{{ url_for('new_campaign') }}">Create your first campaign</a>.</div>
+  {% endif %}
+</section>
+{% endblock %}

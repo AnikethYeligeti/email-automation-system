@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Module 4</p>
+    <h1>Campaign analytics</h1>
+  </div>
+</header>
+
+<section class="stat-grid">
+  <div class="stat-card">
+    <span class="stat-label">Emails sent</span>
+    <span class="stat-value">{{ sends }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Opens</span>
+    <span class="stat-value">{{ opens }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Open rate</span>
+    <span class="stat-value">{{ open_rate }}%</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Click rate</span>
+    <span class="stat-value">{{ click_rate }}%</span>
+  </div>
+</section>
+
+<section class="panel-row">
+  <div class="panel">
+    <div class="panel-head"><h2>Campaign performance</h2></div>
+    {% if campaign_labels %}
+    <canvas id="campaignChart" height="220"></canvas>
+    {% else %}
+    <div class="empty">Send a campaign to see performance data here.</div>
+    {% endif %}
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h2>Subscriber growth</h2></div>
+    {% if growth_labels %}
+    <canvas id="growthChart" height="220"></canvas>
+    {% else %}
+    <div class="empty">Add subscribers to see growth over time.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>Engagement trend</h2></div>
+  {% if trend_labels %}
+  <canvas id="trendChart" height="100"></canvas>
+  {% else %}
+  <div class="empty">No engagement data yet.</div>
+  {% endif %}
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const inkMuted = '#6B7280';
+const gridColor = '#E4E7EF';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = inkMuted;
+
+{% if campaign_labels %}
+new Chart(document.getElementById('campaignChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ campaign_labels|tojson }},
+    datasets: [
+      { label: 'Open rate %', data: {{ campaign_open_rates|tojson }}, backgroundColor: '#4F46E5', borderRadius: 4 },
+      { label: 'Click rate %', data: {{ campaign_click_rates|tojson }}, backgroundColor: '#F59E0B', borderRadius: 4 }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } },
+    plugins: { legend: { position: 'bottom' } }
+  }
+});
+{% endif %}
+
+{% if growth_labels %}
+new Chart(document.getElementById('growthChart'), {
+  type: 'line',
+  data: {
+    labels: {{ growth_labels|tojson }},
+    datasets: [{
+      label: 'Total subscribers', data: {{ growth_cumulative|tojson }},
+      borderColor: '#4F46E5', backgroundColor: 'rgba(79,70,229,0.08)', fill: true, tension: 0.3
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } },
+    plugins: { legend: { display: false } }
+  }
+});
+{% endif %}
+
+{% if trend_labels %}
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: {{ trend_labels|tojson }},
+    datasets: [
+      { label: 'Open rate %', data: {{ trend_open_rate|tojson }}, borderColor: '#4F46E5', backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'Click rate %', data: {{ trend_click_rate|tojson }}, borderColor: '#F59E0B', backgroundColor: 'transparent', tension: 0.3 }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } },
+    plugins: { legend: { position: 'bottom' } }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

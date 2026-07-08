@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Overview</p>
+    <h1>Campaign control room</h1>
+  </div>
+  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">+ New campaign</a>
+</header>
+
+<section class="stat-grid">
+  <div class="stat-card">
+    <span class="stat-label">Active subscribers</span>
+    <span class="stat-value">{{ stats.subscribers }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Total campaigns</span>
+    <span class="stat-value">{{ stats.campaigns }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Campaigns sent</span>
+    <span class="stat-value">{{ stats.sent }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">Emails delivered</span>
+    <span class="stat-value">{{ stats.emails_sent }}</span>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Recent campaigns</h2>
+    <a href="{{ url_for('campaigns') }}">View all →</a>
+  </div>
+  {% if recent_campaigns %}
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Created</th></tr></thead>
+    <tbody>
+      {% for c in recent_campaigns %}
+      <tr>
+        <td>{{ c.name }}</td>
+        <td><span class="tag">{{ c.campaign_type }}</span></td>
+        <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
+        <td class="muted">{{ c.created_at }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No campaigns yet. Create your first one to get started.</div>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <h2>Automation activity</h2>
+    <a href="{{ url_for('automation') }}">Manage automation →</a>
+  </div>
+  {% if recent_automation %}
+  <table class="data-table">
+    <thead><tr><th>Event</th><th>When</th></tr></thead>
+    <tbody>
+      {% for a in recent_automation %}
+      <tr><td>{{ a.note }}</td><td class="muted">{{ a.created_at }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No automation events yet. Set up a welcome email or schedule a campaign.</div>
+  {% endif %}
+</section>
+{% endblock %}

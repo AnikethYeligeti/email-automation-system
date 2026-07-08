@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Automation{% endblock %}
+{% block content %}
+<header class="page-head">
+  <div>
+    <p class="eyebrow">Module 3</p>
+    <h1>Automation</h1>
+  </div>
+</header>
+
+<section class="panel-row">
+  <div class="panel form-panel">
+    <h2>Welcome email automation</h2>
+    <p class="muted small">When someone new subscribes, automatically send the campaign below to them.</p>
+    {% if active_rule %}
+    <div class="flash flash-success" style="margin-bottom:14px;">
+      Active: sending <strong>{{ active_rule.campaign_name }}</strong> to every new subscriber.
+    </div>
+    <form method="post" action="{{ url_for('disable_automation') }}">
+      <button class="btn btn-ghost" type="submit">Disable</button>
+    </form>
+    {% else %}
+    <form method="post" class="stacked-form">
+      <label>Campaign to send on signup
+        <select name="campaign_id" required>
+          <option value="">— Select a campaign —</option>
+          {% for c in campaigns %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-primary" type="submit">Activate welcome automation</button>
+    </form>
+    {% if not campaigns %}
+    <p class="muted small mt">Create a campaign first, then come back to wire it up.</p>
+    {% endif %}
+    {% endif %}
+  </div>
+
+  <div class="panel form-panel">
+    <h2>Scheduled sends</h2>
+    <p class="muted small">A background scheduler checks every 15 seconds and auto-sends campaigns once their scheduled time passes.</p>
+    {% if scheduled %}
+    <table class="data-table">
+      <thead><tr><th>Campaign</th><th>Scheduled for</th></tr></thead>
+      <tbody>
+        {% for c in scheduled %}
+        <tr><td>{{ c.name }}</td><td class="mono">{{ c.scheduled_time }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Nothing scheduled. Set a schedule when creating a campaign.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head"><h2>Automation log</h2></div>
+  {% if log %}
+  <table class="data-table">
+    <thead><tr><th>Event</th><th>When</th></tr></thead>
+    <tbody>
+      {% for l in log %}
+      <tr><td>{{ l.note }}</td><td class="muted">{{ l.created_at }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No automated sends have run yet.</div>
+  {% endif %}
+</section>
+{% endblock %}
