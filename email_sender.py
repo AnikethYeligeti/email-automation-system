@@ -26,17 +26,16 @@ def get_smtp_config(conn):
         from_email = get_setting(conn, "smtp_from_email")
         from_name = get_setting(conn, "smtp_from_name", "Mailflow")
 
-    if not all([host, port, username, password, from_email]):
-        return None
-
-    return {
-                "host": host,
-                "port": int(port),
+        if not all([host, port, username, password, from_email]):
+            return None
+                        return {
+                    "host": host,
+                    "port": int(port),
                 "username": username,
                 "password": password,
                 "from_email": from_email,
                 "from_name": from_name,
-    }
+        }
 
 def send_email(conn, to_email, subject, html_content):
         """
