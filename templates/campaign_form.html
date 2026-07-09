@@ -1,27 +1,31 @@
 {% extends "base.html" %}
-{% block title %}New Campaign{% endblock %}
+{% block title %}Create Campaign{% endblock %}
 {% block content %}
 <header class="page-head">
   <div>
     <p class="eyebrow">Module 2</p>
-    <h1>Create campaign</h1>
+    <h1>Compose Campaign</h1>
   </div>
 </header>
 
 <section class="panel form-panel wide">
   <form method="post" class="stacked-form">
-    <label>Campaign name<input type="text" name="name" required placeholder="July Newsletter"></label>
-    <label>Subject line<input type="text" name="subject" required placeholder="Your July update is here 🚀"></label>
+    <label>Campaign Name
+      <input type="text" name="name" required placeholder="e.g. July Summer Sale Newsletter">
+    </label>
+    <label>Email Subject Line
+      <input type="text" name="subject" required placeholder="e.g. Your July update is here 🚀">
+    </label>
 
     <div class="two-col">
-      <label>Campaign type
+      <label>Campaign Category
         <select name="campaign_type">
           <option value="promotional">Promotional</option>
           <option value="welcome">Welcome email</option>
           <option value="reminder">Reminder</option>
         </select>
       </label>
-      <label>Target group
+      <label>Target Recipient Group
         <select name="group_id">
           <option value="">All active subscribers</option>
           {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
@@ -29,18 +33,21 @@
       </label>
     </div>
 
-    <label>Schedule (optional)
+    <label>Schedule Delivery (Optional)
       <input type="datetime-local" name="scheduled_time">
-      <span class="hint">Leave blank to save as draft and send manually.</span>
+      <span class="hint">Leave blank to save as a draft and trigger manually.</span>
     </label>
 
-    <label>Email content
-      <textarea name="content" rows="10" required placeholder="Write your email content here. Basic HTML is supported."></textarea>
+    <label>HTML Content Body
+      <textarea name="content" rows="12" required placeholder="Compose your email body here. Basic HTML layout (such as <b>, <p>, <a> tags) is supported."></textarea>
     </label>
 
     <div class="form-actions">
       <a href="{{ url_for('campaigns') }}" class="btn btn-ghost">Cancel</a>
-      <button class="btn btn-primary" type="submit">Save campaign</button>
+      <button class="btn btn-primary" type="submit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Campaign
+      </button>
     </div>
   </form>
 </section>

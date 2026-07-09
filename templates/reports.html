@@ -4,42 +4,78 @@
 <header class="page-head">
   <div>
     <p class="eyebrow">Module 5</p>
-    <h1>Reports</h1>
+    <h1>Report Exports</h1>
   </div>
 </header>
 
 <section class="panel-row">
-  <div class="panel">
-    <h2 style="font-size:15px;margin:0 0 10px;">Subscriber report</h2>
-    <p class="muted small">Full subscriber list with group and status.</p>
-    <a class="btn btn-secondary" href="{{ url_for('report_subscribers_csv') }}">Download CSV</a>
+  <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <div>
+      <h2 style="font-size:18px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Subscriber Contacts Report
+      </h2>
+      <p class="muted small" style="margin-bottom: 24px;">Download a complete spreadsheet list of all subscribers containing registration date, status, and grouping tag.</p>
+    </div>
+    <a class="btn btn-secondary" href="{{ url_for('report_subscribers_csv') }}" style="width:100%;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export Subscribers (CSV)
+    </a>
   </div>
-  <div class="panel">
-    <h2 style="font-size:15px;margin:0 0 10px;">Campaign summary report</h2>
-    <p class="muted small">All campaigns with sends, opens, clicks and rates.</p>
-    <a class="btn btn-secondary" href="{{ url_for('report_campaigns_csv') }}">Download CSV</a>
+  
+  <div class="panel" style="display:flex; flex-direction:column; justify-content:space-between;">
+    <div>
+      <h2 style="font-size:18px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Campaign Analytics Export
+      </h2>
+      <p class="muted small" style="margin-bottom: 24px;">Download aggregate stats for all sent email campaigns including delivery counts, open rates, and click metrics.</p>
+    </div>
+    <a class="btn btn-secondary" href="{{ url_for('report_campaigns_csv') }}" style="width:100%;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export Campaigns (CSV)
+    </a>
   </div>
 </section>
 
 <section class="panel">
-  <div class="panel-head"><h2>Per-campaign PDF reports</h2></div>
+  <div class="panel-head">
+    <h2>Individual Campaign PDF Reports</h2>
+  </div>
   {% if campaigns %}
-  <table class="data-table">
-    <thead><tr><th>Campaign</th><th>Sent</th><th>Opens</th><th>Clicks</th><th></th></tr></thead>
-    <tbody>
-      {% for c in campaigns %}
-      <tr>
-        <td>{{ c.name }}</td>
-        <td class="muted">{{ c.sent_at }}</td>
-        <td>{{ c.opens or 0 }}</td>
-        <td>{{ c.clicks or 0 }}</td>
-        <td><a class="btn btn-sm btn-ghost" href="{{ url_for('report_campaign_pdf', camp_id=c.id) }}">Download PDF</a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Campaign Name</th>
+          <th>Dispatched Date</th>
+          <th>Delivered Recipients</th>
+          <th>Total Opens</th>
+          <th>Total Clicks</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in campaigns %}
+        <tr>
+          <td><strong>{{ c.name }}</strong></td>
+          <td class="muted mono">{{ c.sent_at }}</td>
+          <td class="mono">{{ c.sends or 0 }}</td>
+          <td class="mono text-soft">{{ c.opens or 0 }}</td>
+          <td class="mono text-soft">{{ c.clicks or 0 }}</td>
+          <td>
+            <a class="btn btn-sm btn-ghost" href="{{ url_for('report_campaign_pdf', camp_id=c.id) }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Download PDF
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <div class="empty">Send a campaign first to generate its report.</div>
+  <div class="empty">Dispatch an email campaign first to generate its PDF analytics report here.</div>
   {% endif %}
 </section>
 {% endblock %}

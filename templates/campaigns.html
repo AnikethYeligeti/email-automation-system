@@ -6,38 +6,71 @@
     <p class="eyebrow">Module 2 · Module 3</p>
     <h1>Campaigns</h1>
   </div>
-  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">+ New campaign</a>
+  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New Campaign
+  </a>
 </header>
 
 <section class="panel">
   {% if campaigns %}
-  <table class="data-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Group</th><th>Status</th><th>Sent</th><th>Created</th><th></th></tr></thead>
-    <tbody>
-      {% for c in campaigns %}
-      <tr>
-        <td><strong>{{ c.name }}</strong><div class="muted small">{{ c.subject }}</div></td>
-        <td><span class="tag">{{ c.campaign_type }}</span></td>
-        <td>{{ c.group_name or 'All subscribers' }}</td>
-        <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
-        <td>{{ c.sent_count }}{% if c.failed_count %} <span class="status status-unsubscribed">{{ c.failed_count }} failed</span>{% endif %}</td>
-        <td class="muted">{{ c.created_at }}</td>
-        <td class="row-actions">
-          {% if c.status != 'sent' %}
-          <form method="post" action="{{ url_for('send_campaign', camp_id=c.id) }}" onsubmit="return confirm('Send this campaign now?')">
-            <button class="btn btn-sm btn-primary" type="submit">Send now</button>
-          </form>
-          {% endif %}
-          <form method="post" action="{{ url_for('delete_campaign', camp_id=c.id) }}" onsubmit="return confirm('Delete this campaign?')">
-            <button class="link-danger" type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name / Subject</th>
+          <th>Type</th>
+          <th>Audience Group</th>
+          <th>Status</th>
+          <th>Recipients</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in campaigns %}
+        <tr>
+          <td>
+            <div style="font-size: 15px; font-weight: 700; color: var(--text);">{{ c.name }}</div>
+            <div class="muted small">{{ c.subject }}</div>
+          </td>
+          <td><span class="tag">{{ c.campaign_type }}</span></td>
+          <td>
+            <span class="tag" style="background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.08);">
+              {{ c.group_name or 'All active subscribers' }}
+            </span>
+          </td>
+          <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
+          <td>
+            <span class="mono">{{ c.sent_count }}</span>
+            {% if c.failed_count %}
+              <span class="status status-unsubscribed" style="font-size:10px; padding: 2px 6px; margin-left: 4px;">{{ c.failed_count }} failed</span>
+            {% endif %}
+          </td>
+          <td class="muted mono">{{ c.created_at }}</td>
+          <td class="row-actions">
+            {% if c.status != 'sent' %}
+            <form method="post" action="{{ url_for('send_campaign', camp_id=c.id) }}" onsubmit="return confirm('Send this campaign to subscribers now?')">
+              <button class="btn btn-sm btn-primary" type="submit">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Send Now
+              </button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('delete_campaign', camp_id=c.id) }}" onsubmit="return confirm('Are you sure you want to delete this campaign?')">
+              <button class="link-danger" type="submit">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <div class="empty">No campaigns yet. <a href="{{ url_for('new_campaign') }}">Create your first campaign</a>.</div>
+  <div class="empty">No campaigns created yet. <a href="{{ url_for('new_campaign') }}" style="color:var(--primary); font-weight:600; text-decoration:none;">Create one now</a>.</div>
   {% endif %}
 </section>
 {% endblock %}

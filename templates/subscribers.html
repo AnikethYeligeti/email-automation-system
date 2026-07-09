@@ -4,56 +4,66 @@
 <header class="page-head">
   <div>
     <p class="eyebrow">Module 1</p>
-    <h1>Subscriber management</h1>
+    <h1>Subscriber Management</h1>
   </div>
 </header>
 
 <section class="panel-row">
   <div class="panel form-panel">
-    <h2>Add subscriber</h2>
+    <h2>Add Subscriber</h2>
     <form method="post" action="{{ url_for('add_subscriber') }}" class="stacked-form">
-      <label>Name<input type="text" name="name" required placeholder="Jane Doe"></label>
-      <label>Email<input type="email" name="email" required placeholder="jane@example.com"></label>
-      <label>Group
+      <label>Name
+        <input type="text" name="name" required placeholder="Jane Doe">
+      </label>
+      <label>Email Address
+        <input type="email" name="email" required placeholder="jane@example.com">
+      </label>
+      <label>Assign to Group
         <select name="group_id">
           <option value="">— No group —</option>
           {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
         </select>
       </label>
-      <button class="btn btn-primary" type="submit">Add subscriber</button>
+      <button class="btn btn-primary" type="submit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+        Add Subscriber
+      </button>
     </form>
   </div>
 
   <div class="panel form-panel">
-    <h2>Import contact list (CSV)</h2>
+    <h2>Import List (CSV)</h2>
     <form method="post" action="{{ url_for('import_subscribers') }}" enctype="multipart/form-data" class="stacked-form">
-      <label>CSV file <span class="hint">columns: name, email</span>
+      <label>CSV File <span class="hint">Must contain columns: name, email</span>
         <input type="file" name="csv_file" accept=".csv" required>
       </label>
-      <label>Assign to group
+      <label>Assign to Group
         <select name="group_id">
           <option value="">— No group —</option>
           {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
         </select>
       </label>
-      <button class="btn btn-secondary" type="submit">Import CSV</button>
+      <button class="btn btn-secondary" type="submit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import CSV
+      </button>
     </form>
 
-    <h2 class="mt">Create group</h2>
+    <h2 class="mt">Create New Group</h2>
     <form method="post" action="{{ url_for('add_group') }}" class="inline-form">
-      <input type="text" name="name" placeholder="e.g. VIP Customers" required>
+      <input type="text" name="name" placeholder="e.g. Newsletter Subscribers" required>
       <button class="btn btn-ghost" type="submit">Create</button>
     </form>
   </div>
 </section>
 
 <section class="panel">
-  <div class="panel-head">
-    <h2>All subscribers ({{ subscribers|length }})</h2>
+  <div class="panel-head" style="flex-wrap: wrap;">
+    <h2>All Subscribers ({{ subscribers|length }})</h2>
     <form method="get" class="filter-form">
-      <input type="text" name="search" placeholder="Search name or email" value="{{ search }}">
+      <input type="text" name="search" placeholder="Search name or email..." value="{{ search }}">
       <select name="group" onchange="this.form.submit()">
-        <option value="">All groups</option>
+        <option value="">All Groups</option>
         {% for g in groups %}
         <option value="{{ g.name }}" {{ 'selected' if group_filter==g.name }}>{{ g.name }}</option>
         {% endfor %}
@@ -63,31 +73,53 @@
   </div>
 
   {% if subscribers %}
-  <table class="data-table">
-    <thead><tr><th>Name</th><th>Email</th><th>Group</th><th>Status</th><th>Joined</th><th></th></tr></thead>
-    <tbody>
-      {% for s in subscribers %}
-      <tr>
-        <td>{{ s.name }}</td>
-        <td class="mono">{{ s.email }}</td>
-        <td>{{ s.group_name or '—' }}</td>
-        <td>
-          <form method="post" action="{{ url_for('toggle_subscriber', sub_id=s.id) }}">
-            <button class="status status-{{ s.status }} as-button" type="submit">{{ s.status }}</button>
-          </form>
-        </td>
-        <td class="muted">{{ s.created_at }}</td>
-        <td>
-          <form method="post" action="{{ url_for('delete_subscriber', sub_id=s.id) }}" onsubmit="return confirm('Remove this subscriber?')">
-            <button class="link-danger" type="submit">Remove</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Group</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in subscribers %}
+        <tr>
+          <td><strong>{{ s.name }}</strong></td>
+          <td class="mono">{{ s.email }}</td>
+          <td>
+            {% if s.group_name %}
+              <span class="tag" style="background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.15);">{{ s.group_name }}</span>
+            {% else %}
+              <span class="muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="post" action="{{ url_for('toggle_subscriber', sub_id=s.id) }}" style="display:inline;">
+              <button class="status status-{{ s.status }} as-button" type="submit" title="Click to toggle status">
+                {{ s.status }}
+              </button>
+            </form>
+          </td>
+          <td class="muted mono">{{ s.created_at }}</td>
+          <td>
+            <form method="post" action="{{ url_for('delete_subscriber', sub_id=s.id) }}" onsubmit="return confirm('Are you sure you want to remove this subscriber?')">
+              <button class="link-danger" type="submit">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:2px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                Remove
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <div class="empty">No subscribers found. Add one above or import a CSV.</div>
+  <div class="empty">No subscribers found. Add one above or import a CSV list.</div>
   {% endif %}
 </section>
 {% endblock %}

@@ -4,49 +4,73 @@
 <header class="page-head">
   <div>
     <p class="eyebrow">Overview</p>
-    <h1>Campaign control room</h1>
+    <h1>Campaign Control Room</h1>
   </div>
-  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">+ New campaign</a>
+  <a href="{{ url_for('new_campaign') }}" class="btn btn-primary">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    New Campaign
+  </a>
 </header>
 
 <section class="stat-grid">
   <div class="stat-card">
-    <span class="stat-label">Active subscribers</span>
+    <div class="stat-header">
+      <span class="stat-label">Active Subscribers</span>
+      <svg class="stat-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    </div>
     <span class="stat-value">{{ stats.subscribers }}</span>
   </div>
   <div class="stat-card">
-    <span class="stat-label">Total campaigns</span>
+    <div class="stat-header">
+      <span class="stat-label">Total Campaigns</span>
+      <svg class="stat-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </div>
     <span class="stat-value">{{ stats.campaigns }}</span>
   </div>
   <div class="stat-card">
-    <span class="stat-label">Campaigns sent</span>
+    <div class="stat-header">
+      <span class="stat-label">Campaigns Sent</span>
+      <svg class="stat-icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </div>
     <span class="stat-value">{{ stats.sent }}</span>
   </div>
   <div class="stat-card">
-    <span class="stat-label">Emails delivered</span>
+    <div class="stat-header">
+      <span class="stat-label">Emails Delivered</span>
+      <svg class="stat-icon" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+    </div>
     <span class="stat-value">{{ stats.emails_sent }}</span>
   </div>
 </section>
 
 <section class="panel">
   <div class="panel-head">
-    <h2>Recent campaigns</h2>
-    <a href="{{ url_for('campaigns') }}">View all →</a>
+    <h2>Recent Campaigns</h2>
+    <a href="{{ url_for('campaigns') }}">View All Campaigns →</a>
   </div>
   {% if recent_campaigns %}
-  <table class="data-table">
-    <thead><tr><th>Name</th><th>Type</th><th>Status</th><th>Created</th></tr></thead>
-    <tbody>
-      {% for c in recent_campaigns %}
-      <tr>
-        <td>{{ c.name }}</td>
-        <td><span class="tag">{{ c.campaign_type }}</span></td>
-        <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
-        <td class="muted">{{ c.created_at }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_campaigns %}
+        <tr>
+          <td><strong>{{ c.name }}</strong></td>
+          <td><span class="tag">{{ c.campaign_type }}</span></td>
+          <td><span class="status status-{{ c.status }}">{{ c.status }}</span></td>
+          <td class="muted mono">{{ c.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
   <div class="empty">No campaigns yet. Create your first one to get started.</div>
   {% endif %}
@@ -54,18 +78,33 @@
 
 <section class="panel">
   <div class="panel-head">
-    <h2>Automation activity</h2>
-    <a href="{{ url_for('automation') }}">Manage automation →</a>
+    <h2>Automation Activity</h2>
+    <a href="{{ url_for('automation') }}">Manage Automation →</a>
   </div>
   {% if recent_automation %}
-  <table class="data-table">
-    <thead><tr><th>Event</th><th>When</th></tr></thead>
-    <tbody>
-      {% for a in recent_automation %}
-      <tr><td>{{ a.note }}</td><td class="muted">{{ a.created_at }}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Event Description</th>
+          <th>Occurred At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in recent_automation %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              {{ a.note }}
+            </div>
+          </td>
+          <td class="muted mono">{{ a.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
   <div class="empty">No automation events yet. Set up a welcome email or schedule a campaign.</div>
   {% endif %}

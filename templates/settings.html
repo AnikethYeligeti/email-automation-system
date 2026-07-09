@@ -3,26 +3,25 @@
 {% block content %}
 <header class="page-head">
   <div>
-    <p class="eyebrow">Real email delivery</p>
-    <h1>SMTP settings</h1>
+    <p class="eyebrow">Real Email Delivery</p>
+    <h1>SMTP Server Configuration</h1>
   </div>
 </header>
 
 <section class="panel form-panel wide">
-  <h2>Mailtrap (or any SMTP provider)</h2>
-  <p class="muted small">
-    Get free sandbox credentials at
-    <a href="https://mailtrap.io" target="_blank" rel="noopener">mailtrap.io</a> →
-    Email Testing → Inboxes → SMTP Settings. Emails sent here land in your Mailtrap
-    inbox, not real recipients — safe for testing and demos.
+  <h2>SMTP credentials</h2>
+  <p class="muted small" style="margin-bottom: 24px;">
+    To send actual emails, connect your Mailflow platform to an SMTP relay. Get free sandbox credentials at
+    <a href="https://mailtrap.io" target="_blank" rel="noopener" style="color: var(--primary); font-weight: 600; text-decoration: none;">mailtrap.io</a> →
+    Email Testing → Inboxes → SMTP Settings. This prevents email delivery to real addresses during testing.
   </p>
 
-  <form method="post" class="stacked-form mt">
+  <form method="post" class="stacked-form">
     <div class="two-col">
-      <label>SMTP host
+      <label>SMTP Host
         <input type="text" name="smtp_host" value="{{ s.smtp_host }}" placeholder="sandbox.smtp.mailtrap.io" required>
       </label>
-      <label>SMTP port
+      <label>SMTP Port
         <input type="text" name="smtp_port" value="{{ s.smtp_port }}" placeholder="587" required>
       </label>
     </div>
@@ -35,26 +34,35 @@
       </label>
     </div>
     <div class="two-col">
-      <label>From email
-        <input type="email" name="smtp_from_email" value="{{ s.smtp_from_email }}" placeholder="hello@yourproject.com" required>
+      <label>Sender Email (From)
+        <input type="email" name="smtp_from_email" value="{{ s.smtp_from_email }}" placeholder="hello@yourdomain.com" required>
       </label>
-      <label>From name
+      <label>Sender Name
         <input type="text" name="smtp_from_name" value="{{ s.smtp_from_name }}" placeholder="Mailflow">
       </label>
     </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" type="submit">Save settings</button>
+    <div class="form-actions" style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+      <p class="muted small" style="margin: 0; text-align: left; max-width: 60%;">
+        If empty, Mailflow defaults to simulated delivery with randomized open/click metrics.
+      </p>
+      <button class="btn btn-primary" type="submit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Settings
+      </button>
     </div>
   </form>
 
-  <form method="post" action="{{ url_for('settings_test') }}" class="mt">
-    <button class="btn btn-ghost" type="submit">Test connection</button>
-  </form>
-
-  <p class="muted small mt">
-    If these fields are left empty, campaigns will still work using simulated sending
-    (no real emails, randomized engagement) — useful for demoing the analytics dashboard
-    without needing an inbox at all.
-  </p>
+  <div style="border-top: 1px solid var(--border); margin-top: 32px; padding-top: 24px; display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <h3 style="font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px;">Test connection</h3>
+      <p class="muted small">Verify that Mailflow can authenticate with the configured SMTP server.</p>
+    </div>
+    <form method="post" action="{{ url_for('settings_test') }}">
+      <button class="btn btn-ghost" type="submit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Test Connection
+      </button>
+    </form>
+  </div>
 </section>
 {% endblock %}
