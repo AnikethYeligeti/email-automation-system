@@ -27,7 +27,7 @@ def get_smtp_config(conn):
         from_name = get_setting(conn, "smtp_from_name", "Mailflow")
 
     if not all([host, port, username, password, from_email]):
-                return None
+        return None
 
     return {
                 "host": host,
